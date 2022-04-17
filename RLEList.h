@@ -30,7 +30,6 @@
 * Complete the implementation of struct RLEList_t defined in RLEList.c
 */
 typedef struct RLEList_t *RLEList;
-
 /** Enum used for returning error codes from RLE list functions */
 typedef enum {
     RLE_LIST_SUCCESS,
