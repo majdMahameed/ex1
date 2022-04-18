@@ -43,6 +43,11 @@ RLEListResult RLEListAppend(RLEList list, char value) {
     while (ptr->next) {
         ptr = ptr->next;
     }
+    if (ptr->amount==0) {
+        ptr->value = value;
+        ptr->amount = 1;
+        return RLE_LIST_SUCCESS;
+    }
     if (ptr->value==value) {
         ptr->amount += 1;
         return RLE_LIST_SUCCESS;
