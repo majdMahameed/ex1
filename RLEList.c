@@ -1,6 +1,7 @@
 #include "RLEList.h"
 #include <string.h>
 
+#define DEFAULT_EXPORTED_LINE_LENGTH 4
 struct RLEList_t{
     //TODO: implement
     // DONE!
