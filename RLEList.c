@@ -141,6 +141,7 @@ char* RLEListExportToString(RLEList list, RLEListResult* result) {
         }
         return NULL;
     }
+    RLEList list_ptr = list;
     char *out = malloc(sizeof(*out) * RLEListSize(list) * DEFAULT_EXPORTED_LINE_LENGTH + 1)
     char *out_ptr = out;
     int cur_line_length;
