@@ -1,4 +1,5 @@
 #include "RLEList.h"
+#include <string.h>
 
 struct RLEList_t{
     //TODO: implement
@@ -7,21 +8,21 @@ struct RLEList_t{
     struct RLEList* next;
 };
 
-//implement the functions here
+//implement the functions here 
 //majd
 RLEList RLEListCreate() {
-    RLEList newList = malloc(sizeof(newList*));
-    if (!newList) {
+    RLEList ptr = malloc(sizeof(ptr));
+    if (!ptr) {
         return NULL;
     }
-    newList->value = '';
-    ptnewListr->next = NULL;
-    return newList;
+    ptr->value = '';
+    ptr->next =NULL;
+    return ptr;
 }
 
 // feras
 void RLEListDestroy(RLEList list) {
-    RLElist *ptr, *store;
+    RLEList ptr, store;
     ptr = list;
     while (ptr) {
         store = ptr->next;
@@ -32,17 +33,18 @@ void RLEListDestroy(RLEList list) {
 
 //majd
 RLEListResult RLEListAppend(RLEList list, char value) {
-    if (!list||!value) {
+    if (!list || !value) {
            return RLE_LIST_NULL_ARGUMENT;
     }
-    RLElist newHead = RLEListCreate(newHead);
+    RLEList newHead = RLEListCreate(newHead);
     if (!newHead) {
            return RLE_LIST_OUT_OF_MEMORY;
     }
     newHead->value = value;
-    RLElist *ptr=list;
-    while(ptr->next)
-        ptr->next = ptr->next;
+    RLEList ptr = list;
+    while (ptr->next) {
+        ptr = ptr->next;
+    }
     ptr->next = newHead;
     return RLE_LIST_SUCCESS;
 }
@@ -55,21 +57,32 @@ int RLEListSize(RLEList list) {
     int count = 0;
     while (list) {
         count++;
-        list->next;   //msh lazm hon list=list->next?
+        list->next;
     }
     return count;
 }
+
 //majd
 RLEListResult RLEListRemove(RLEList list, int index) {
-    if (!list||!value) {
+    if (!list) {
            return RLE_LIST_NULL_ARGUMENT;
     }
     if (RLEListSize(list)<index) {
             return RLE_LIST_INDEX_OUT_OF_BOUNDS;
     }
-    RLElist* ptr = list, ptrNext;
-    for(int i=0; i<index-1; i++) {
+    RLEList ptr = list, ptrNext;
+    for (int i = 0; i < index-1; i++) {
         ptr = ptr->next;
+    }
+    if (index==0) {
+        if (ptr->next) {
+            ptr = ptr->next;
+            RLEListDestroy(ptr);
+                return RLE_LIST_SUCCESS;
+        }
+        ptr = NULL;
+        RLEListDestroy(ptr);
+            return RLE_LIST_SUCCESS;
     }
     ptrNext = ptr->next;
     if (ptrNext->next) {
@@ -77,7 +90,60 @@ RLEListResult RLEListRemove(RLEList list, int index) {
         RLEListDestroy(ptrNext);
             return RLE_LIST_SUCCESS;
     }
-    ptr->next  NULL;
+    ptr->next = NULL;
     RLEListDestroy(ptrNext);
     return RLE_LIST_SUCCESS;
 }
+
+// feras
+char RLEListGet(RLEList list, int index, RLEListResult *result) {
+    if (!list) {
+        *result = RLE_LIST_NULL_ARGUMENT;
+        return 0;
+    }
+    RLEList ptr = list;
+    for (int i = 0; i < index; i++) {
+        ptr = ptr->next;
+        if (!ptr) {
+            *result = RLE_LIST_INDEX_OUT_OF_BOUNDS;
+            return 0;
+        }
+    }
+    *result = RLE_LIST_SUCCESS;
+    return ptr->value;
+}
+//feras
+char* RLEListExportToString(RLEList list, RLEListResult* result) {
+    if (!list) {
+        *result = RLE_LIST_NULL_ARGUMENT;
+        return NULL;
+    }
+    char counted_char = list->value;
+    char *out = malloc(sizeof(out) * 4 * RLEListSize(list)), *out_ptr = out;
+    int count = 1, line_length = 0;
+    RLEList list_ptr = list->next;
+
+    while (list_ptr) {
+        if (list_ptr->value != counted_char) {
+
+            // add "<counted_char><count>\n" to out
+            counted_char = list_ptr->value;
+            count = 1;
+        }
+        else {
+            count++;
+        }
+        list_ptr = list_ptr->next;
+    }
+    //majd
+    RLEListResult RLEListMap(RLEList list, MapFunction map_function) {
+        if (!list) {
+          return  RLE_LIST_NULL_ARGUMENT;
+        }
+        RLEList ptr = list;
+        while (ptr) {
+            ptr->value = map_function(ptr->value);
+        }
+        return RLE_LIST_SUCCESS;
+    }
+} 
