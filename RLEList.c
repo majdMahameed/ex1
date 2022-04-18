@@ -81,12 +81,16 @@ RLEListResult RLEListRemove(RLEList list, int index) {
     if (!list) {
            return RLE_LIST_NULL_ARGUMENT;
     }
-    if (RLEListSize(list)<index) {
+    if (RLEListSize(list)<index||RLEListSize(list)==0) {
             return RLE_LIST_INDEX_OUT_OF_BOUNDS;
     }
     RLEList ptr = list, ptrNext;
-    for (int i = 0; i < index-1; i++) {
+    //if count is not positive that means the char is in this node
+    int count=index;
+    count -= ptr->amount;
+    while (count>0) {
         ptr = ptr->next;
+        count -= ptr->amount;
     }
     if (index==0) {
         if (list->next) {
