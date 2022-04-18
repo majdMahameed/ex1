@@ -5,6 +5,7 @@ struct RLEList_t{
     //TODO: implement
     // DONE!
     char value;
+    int amount;
     struct RLEList* next;
 };
 
@@ -16,7 +17,8 @@ RLEList RLEListCreate() {
         return NULL;
     }
     ptr->value = '';
-    ptr->next =NULL;
+    ptr->amount = 0;
+    ptr->next = NULL;
     return ptr;
 }
 
@@ -36,15 +38,20 @@ RLEListResult RLEListAppend(RLEList list, char value) {
     if (!list || !value) {
            return RLE_LIST_NULL_ARGUMENT;
     }
+    RLEList ptr = list;
+    while (ptr->next) {
+        ptr = ptr->next;
+    }
+    if (ptr->value==value) {
+        ptr->amount += 1;
+        return RLE_LIST_SUCCESS;
+    }
     RLEList newHead = RLEListCreate(newHead);
     if (!newHead) {
            return RLE_LIST_OUT_OF_MEMORY;
     }
     newHead->value = value;
-    RLEList ptr = list;
-    while (ptr->next) {
-        ptr = ptr->next;
-    }
+    newHead->amount = 1;
     ptr->next = newHead;
     return RLE_LIST_SUCCESS;
 }
@@ -56,11 +63,12 @@ int RLEListSize(RLEList list) {
     }
     int count = 0;
     while (list) {
-        count++;
-        list->next;
+        count += list->amount;
+        list = list->next;
     }
     return count;
 }
+
 
 //majd
 RLEListResult RLEListRemove(RLEList list, int index) {
@@ -75,68 +83,80 @@ RLEListResult RLEListRemove(RLEList list, int index) {
         ptr = ptr->next;
     }
     if (index==0) {
-        if (ptr->next) {
-            ptr = ptr->next;
-            RLEListDestroy(ptr);
-                return RLE_LIST_SUCCESS;
-        }
-        ptr = NULL;
-        RLEListDestroy(ptr);
+        if (list->next) {
+            if (list->amount==1)
+                 list = list->next;
+            else list->amount -= 1;
             return RLE_LIST_SUCCESS;
+        }
+        if(list->amount==1)
+            list = NULL;
+        else list->amount -= 1;
+        return RLE_LIST_SUCCESS;
     }
+    //ptrNext is the pointer to the index we want to remove
     ptrNext = ptr->next;
     if (ptrNext->next) {
-        ptr->next = ptrNext->next;
-        RLEListDestroy(ptrNext);
-            return RLE_LIST_SUCCESS;
+        if (ptrNext->amount==1)
+             ptr->next = ptrNext->next;
+        else ptrNext->amount -= 1;
+        return RLE_LIST_SUCCESS;
     }
+    if (ptrNext->amount==1)
     ptr->next = NULL;
-    RLEListDestroy(ptrNext);
+    else ptrNext->amount -= 1;
     return RLE_LIST_SUCCESS;
 }
 
 // feras
 char RLEListGet(RLEList list, int index, RLEListResult *result) {
     if (!list) {
-        *result = RLE_LIST_NULL_ARGUMENT;
+        if (result) {
+            *result = RLE_LIST_NULL_ARGUMENT;
+        }
+        return 0;
+    }
+    if (RLEListSize(list) <= index || index < 0) {
+        if (result) {
+            *result = RLE_LIST_INDEX_OUT_OF_BOUNDS;
+        }
         return 0;
     }
     RLEList ptr = list;
-    for (int i = 0; i < index; i++) {
+
+    while (ptr && ptr->amount <= index) {
+        index -= ptr->amount;
         ptr = ptr->next;
-        if (!ptr) {
-            *result = RLE_LIST_INDEX_OUT_OF_BOUNDS;
-            return 0;
-        }
     }
-    *result = RLE_LIST_SUCCESS;
+    if (result) {
+        *result = RLE_LIST_SUCCESS;
+    }
     return ptr->value;
 }
 //feras
 char* RLEListExportToString(RLEList list, RLEListResult* result) {
     if (!list) {
-        *result = RLE_LIST_NULL_ARGUMENT;
+        if (result) {
+            *result = RLE_LIST_NULL_ARGUMENT;
+        }
         return NULL;
     }
-    char counted_char = list->value;
-    char *out = malloc(sizeof(out) * 4 * RLEListSize(list)), *out_ptr = out;
-    int count = 1, line_length = 0;
-    RLEList list_ptr = list->next;
+    char *out = malloc(sizeof(*out) * RLEListSize(list) * DEFAULT_EXPORTED_LINE_LENGTH + 1)
+    char *out_ptr = out;
+    int cur_line_length;
 
     while (list_ptr) {
-        if (list_ptr->value != counted_char) {
-
-            // add "<counted_char><count>\n" to out
-            counted_char = list_ptr->value;
-            count = 1;
-        }
-        else {
-            count++;
-        }
+        cur_line_length = sprintf(out_ptr, "%c%d\n", list_ptr->value, list_ptr->amount);
+        out_ptr += cur_line_length;
         list_ptr = list_ptr->next;
     }
-    //majd
-    RLEListResult RLEListMap(RLEList list, MapFunction map_function) {
+    if (result) {
+        *result = RLE_LIST_SUCCESS;
+    }
+    return out;
+} 
+ //majd
+RLEListResult RLEListMap(RLEList list, MapFunction map_function) {
         if (!list) {
           return  RLE_LIST_NULL_ARGUMENT;
         }
